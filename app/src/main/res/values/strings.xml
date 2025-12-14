@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZenApp</string>
+    <string name="permission_title">Permissão Necessária</string>
+    <string name="permission_description">ZenApp precisa de acesso às estatísticas de uso para monitorar seus aplicativos e ajudá-lo a controlar o foco.</string>
+    <string name="grant_permission">Conceder Permissão</string>
+    <string name="home_title">Diagnóstico de Uso</string>
+    <string name="top_apps_section">Apps Mais Usados</string>
+    <string name="peak_hours_section">Horários de Pico</string>
+    <string name="time_range_today">Hoje</string>
+    <string name="time_range_week">7 Dias</string>
+    <string name="time_range_month">30 Dias</string>
+    <string name="no_data">Nenhum dado disponível</string>
+    <string name="loading">Carregando...</string>
+    <string name="error_loading_data">Erro ao carregar dados</string>
+    <string name="refresh">Atualizar</string>
+</resources>
