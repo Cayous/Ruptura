@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.zenapp.focus.domain.model.AppUsageInfo
 import com.zenapp.focus.domain.model.HourlyUsage
 import com.zenapp.focus.domain.model.TimeRange
+import com.zenapp.focus.domain.repository.UsageRepository
 import com.zenapp.focus.domain.usecase.GetPeakHoursUseCase
 import com.zenapp.focus.domain.usecase.GetTopUsedAppsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +27,8 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getTopUsedAppsUseCase: GetTopUsedAppsUseCase,
-    private val getPeakHoursUseCase: GetPeakHoursUseCase
+    private val getPeakHoursUseCase: GetPeakHoursUseCase,
+    private val repository: UsageRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -70,6 +72,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun refresh() {
+        repository.invalidateCache(_uiState.value.selectedTimeRange)
         loadUsageData(_uiState.value.selectedTimeRange)
     }
 }

@@ -9,10 +9,13 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Process
+import com.zenapp.focus.data.cache.CacheTTL
+import com.zenapp.focus.data.cache.LauncherCacheEntry
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 class UsageStatsDataSource @Inject constructor(
@@ -20,6 +23,7 @@ class UsageStatsDataSource @Inject constructor(
     private val usageStatsManager: UsageStatsManager,
     private val packageManager: PackageManager
 ) {
+    private val launcherCache = ConcurrentHashMap<String, LauncherCacheEntry>()
     suspend fun hasUsagePermission(): Boolean = withContext(Dispatchers.IO) {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.unsafeCheckOpNoThrow(
@@ -93,8 +97,27 @@ class UsageStatsDataSource @Inject constructor(
     /**
      * Checks if the app has a launcher icon (is launchable by the user).
      * Apps without launcher icons are system services or background components.
+     * Results are cached for 24 hours as launcher visibility rarely changes.
      */
-    private fun isLaunchable(packageName: String): Boolean {
+    fun isLaunchable(packageName: String): Boolean {
+        // Check cache
+        val cached = launcherCache[packageName]
+        if (cached != null && isValidLauncher(cached)) {
+            return cached.isLaunchable
+        }
+
+        // Cache miss - compute
+        val result = computeIsLaunchable(packageName)
+        launcherCache[packageName] = LauncherCacheEntry(result)
+        return result
+    }
+
+    private fun isValidLauncher(entry: LauncherCacheEntry): Boolean {
+        val age = System.currentTimeMillis() - entry.timestamp
+        return age < CacheTTL.LAUNCHER_MILLIS
+    }
+
+    private fun computeIsLaunchable(packageName: String): Boolean {
         return try {
             val intent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)
