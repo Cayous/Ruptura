@@ -49,4 +49,10 @@ abstract class RepositoryModule {
     abstract fun bindFocusSessionRepository(
         impl: com.zenapp.focus.data.repository.FocusSessionRepositoryImpl
     ): com.zenapp.focus.domain.repository.FocusSessionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSpiritualRepository(
+        impl: com.zenapp.focus.data.repository.SpiritualRepositoryImpl
+    ): com.zenapp.focus.domain.repository.SpiritualRepository
 }

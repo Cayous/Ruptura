@@ -328,7 +328,18 @@ class FocusLockService : LifecycleService(), SavedStateRegistryOwner {
                 "ZenApp::FocusLock"
             )
         }
-        wakeLock?.acquire(10 * 60 * 1000L) // 10 minutes max
+
+        // Calculate wake lock duration based on session duration
+        val session = currentSession
+        val wakeLockDuration = if (session != null) {
+            // Session duration + 2 minute buffer for cleanup
+            (session.phaseEndTime - session.phaseStartTime) + (2 * 60 * 1000L)
+        } else {
+            // Fallback: 2 hours if no session info available
+            2 * 60 * 60 * 1000L
+        }
+
+        wakeLock?.acquire(wakeLockDuration)
     }
 
     private fun releaseWakeLock() {

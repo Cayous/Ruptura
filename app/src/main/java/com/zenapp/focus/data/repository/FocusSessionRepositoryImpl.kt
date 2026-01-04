@@ -39,7 +39,8 @@ class FocusSessionRepositoryImpl @Inject constructor(
                 phaseEndTime = now + focusDuration,
                 totalFocusTimeMillis = 0,
                 breakCount = 0,
-                createdAt = now
+                createdAt = now,
+                spiritualActivityId = config.spiritualActivityId
             )
 
             val entity = mapper.toEntity(session)
@@ -75,11 +76,16 @@ class FocusSessionRepositoryImpl @Inject constructor(
             if (session != null) {
                 val updated = session.copy(state = SessionState.COMPLETED)
                 updateSession(updated)
+
+                // CRITICAL: Wait for database write to complete
+                // This ensures the next getActiveSession() sees the updated state
+                kotlinx.coroutines.delay(100)  // Small delay to ensure DB write completes
             }
 
             val statsEntity = mapper.statsToEntity(stats)
             statsDao.insertStats(statsEntity)
 
+            // Now it's safe to clear the cache
             activeSessionCache = null
         }
 

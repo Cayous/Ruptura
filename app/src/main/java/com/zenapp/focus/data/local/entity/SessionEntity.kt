@@ -23,5 +23,8 @@ data class SessionEntity(
     val phaseEndTime: Long,
     val totalFocusTimeMillis: Long,
     val breakCount: Int,
-    val createdAt: Long
+    val createdAt: Long,
+
+    // Spiritual Activity Link
+    val spiritualActivityId: String? = null
 )

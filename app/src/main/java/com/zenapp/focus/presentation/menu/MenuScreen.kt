@@ -26,7 +26,8 @@ import com.zenapp.focus.R
 @Composable
 fun MenuScreen(
     onNavigateToUsageDiagnostics: () -> Unit,
-    onNavigateToFocusSession: () -> Unit
+    onNavigateToFocusSession: () -> Unit,
+    onNavigateToSpiritualLife: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -74,6 +75,19 @@ fun MenuScreen(
             ) {
                 Text(
                     text = stringResource(R.string.menu_button_focus),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            // Spiritual Life button
+            Button(
+                onClick = onNavigateToSpiritualLife,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.menu_button_spiritual_life),
                     style = MaterialTheme.typography.titleMedium
                 )
             }

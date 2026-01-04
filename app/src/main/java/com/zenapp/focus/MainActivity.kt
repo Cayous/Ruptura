@@ -28,6 +28,7 @@ import com.zenapp.focus.presentation.focus.setup.FocusSetupScreen
 import com.zenapp.focus.presentation.home.HomeScreen
 import com.zenapp.focus.presentation.menu.MenuScreen
 import com.zenapp.focus.presentation.permission.PermissionScreen
+import com.zenapp.focus.presentation.spiritual.SpiritualLifeScreen
 import com.zenapp.focus.presentation.theme.ZenAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -94,7 +95,8 @@ fun MainNavigationHost() {
         composable("menu") {
             MenuScreen(
                 onNavigateToUsageDiagnostics = { navController.navigate("home") },
-                onNavigateToFocusSession = { navController.navigate("focus_setup") }
+                onNavigateToFocusSession = { navController.navigate("focus_setup") },
+                onNavigateToSpiritualLife = { navController.navigate("spiritual_life") }
             )
         }
 
@@ -111,6 +113,12 @@ fun MainNavigationHost() {
                     // Service will handle overlay, go back to home
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("spiritual_life") {
+            SpiritualLifeScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

@@ -50,7 +50,7 @@ fun LockScreenContent(
 
             // Motivational phrase
             Text(
-                text = "Ficar entediado também é progresso",
+                text = "Queres de verdade ser santo? - Cumpre o pequeno dever de cada momento; faz o que deves e está no que fazes. (Caminho, 815)",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)

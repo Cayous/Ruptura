@@ -10,7 +10,8 @@ data class FocusSession(
     val phaseEndTime: Long,             // Timestamp when current phase should end
     val totalFocusTimeMillis: Long = 0, // Accumulated actual focus time
     val breakCount: Int = 0,            // Number of times user broke focus
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val spiritualActivityId: String? = null  // Links to spiritual activity if session started from one
 )
 
 enum class SessionState {

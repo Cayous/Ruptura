@@ -39,4 +39,14 @@ object DatabaseModule {
     fun provideSessionStatsDao(database: FocusDatabase): SessionStatsDao {
         return database.sessionStatsDao()
     }
+
+    @Provides
+    fun provideSpiritualActivityDao(database: FocusDatabase): com.zenapp.focus.data.local.dao.SpiritualActivityDao {
+        return database.spiritualActivityDao()
+    }
+
+    @Provides
+    fun provideSpiritualCompletionDao(database: FocusDatabase): com.zenapp.focus.data.local.dao.SpiritualCompletionDao {
+        return database.spiritualCompletionDao()
+    }
 }

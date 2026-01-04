@@ -9,7 +9,8 @@ data class SessionConfig(
     val breakDurationMinutes: Int,      // 5, 10, 15
     val totalCycles: Int,               // 1, 2, 4, or -1 for "until I stop"
     val monkModeEnabled: Boolean = false,
-    val emergencyExitType: EmergencyExitType = EmergencyExitType.HOLD_AND_TYPE
+    val emergencyExitType: EmergencyExitType = EmergencyExitType.HOLD_AND_TYPE,
+    val spiritualActivityId: String? = null  // Links to spiritual activity if session started from one
 ) : Parcelable
 
 enum class EmergencyExitType {

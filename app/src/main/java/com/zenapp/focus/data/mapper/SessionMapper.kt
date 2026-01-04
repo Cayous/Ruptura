@@ -29,7 +29,8 @@ class SessionMapper @Inject constructor() {
             phaseEndTime = session.phaseEndTime,
             totalFocusTimeMillis = session.totalFocusTimeMillis,
             breakCount = session.breakCount,
-            createdAt = session.createdAt
+            createdAt = session.createdAt,
+            spiritualActivityId = session.spiritualActivityId
         )
     }
 
@@ -41,7 +42,8 @@ class SessionMapper @Inject constructor() {
                 breakDurationMinutes = entity.breakDurationMinutes,
                 totalCycles = entity.totalCycles,
                 monkModeEnabled = entity.monkModeEnabled,
-                emergencyExitType = EmergencyExitType.valueOf(entity.emergencyExitType)
+                emergencyExitType = EmergencyExitType.valueOf(entity.emergencyExitType),
+                spiritualActivityId = entity.spiritualActivityId
             ),
             state = SessionState.valueOf(entity.state),
             currentCycle = entity.currentCycle,
@@ -50,7 +52,8 @@ class SessionMapper @Inject constructor() {
             phaseEndTime = entity.phaseEndTime,
             totalFocusTimeMillis = entity.totalFocusTimeMillis,
             breakCount = entity.breakCount,
-            createdAt = entity.createdAt
+            createdAt = entity.createdAt,
+            spiritualActivityId = entity.spiritualActivityId
         )
     }
 

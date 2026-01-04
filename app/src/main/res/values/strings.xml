@@ -17,4 +17,8 @@
     <string name="menu_title">ZenApp</string>
     <string name="menu_button_diagnostics">📊 Diagnóstico de Uso</string>
     <string name="menu_button_focus">🔒 Sessão de Foco</string>
+    <string name="menu_button_spiritual_life">📿 Vida Espiritual</string>
+    <string name="spiritual_life_title">Vida Espiritual</string>
+    <string name="spiritual_activity_start">Iniciar</string>
+    <string name="spiritual_activity_mark_complete">Marcar como completo</string>
 </resources>
