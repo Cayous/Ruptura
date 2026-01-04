@@ -2,6 +2,8 @@ package com.zenapp.focus.presentation.focus.setup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +29,70 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+private fun formatDuration(minutes: Int): String {
+    return when {
+        minutes >= 60 -> "${minutes / 60}h"
+        else -> "$minutes min"
+    }
+}
+
+private fun formatDurationDisplay(minutes: Int): String {
+    return when {
+        minutes >= 60 -> {
+            val hours = minutes / 60
+            "$hours hora${if (hours > 1) "s" else ""}"
+        }
+        else -> "$minutes minuto${if (minutes > 1) "s" else ""}"
+    }
+}
+
+@Composable
+private fun DurationChip(
+    durationMinutes: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilterChip(
+        selected = isSelected,
+        onClick = onClick,
+        label = { Text(formatDuration(durationMinutes)) },
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DurationSelectionGrid(
+    selectedDuration: Int,
+    onDurationSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val durations = listOf(1, 5, 10, 15, 20, 25, 30, 45, 60, 120)
+
+    Column(modifier = modifier) {
+        Text(
+            text = "Selecione o tempo de foco",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            durations.forEach { duration ->
+                DurationChip(
+                    durationMinutes = duration,
+                    isSelected = selectedDuration == duration,
+                    onClick = { onDurationSelected(duration) }
+                )
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,15 +133,14 @@ fun FocusSetupScreen(
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            Text(
-                text = "Tempo de foco: ${uiState.focusDurationMinutes} minuto${if (uiState.focusDurationMinutes > 1) "s" else ""}",
-                style = MaterialTheme.typography.bodyLarge
+            DurationSelectionGrid(
+                selectedDuration = uiState.focusDurationMinutes,
+                onDurationSelected = { viewModel.setFocusDuration(it) }
             )
 
             Text(
-                text = "Timer configurado para teste rápido (1 minuto).",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Tempo de foco: ${formatDurationDisplay(uiState.focusDurationMinutes)}",
+                style = MaterialTheme.typography.bodyLarge
             )
 
             Spacer(modifier = Modifier.weight(1f))

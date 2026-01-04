@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class FocusSetupUiState(
-    val focusDurationMinutes: Int = 1,  // 1 minuto para teste
+    val focusDurationMinutes: Int = 25,  // Padrão Pomodoro
     val breakDurationMinutes: Int = 5,
     val totalCycles: Int = 1,
     val monkModeEnabled: Boolean = false,
