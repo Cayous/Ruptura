@@ -34,12 +34,18 @@ import com.zenapp.focus.R
 
 @Composable
 fun PermissionScreen(
+    permissionType: com.zenapp.focus.PermissionType = com.zenapp.focus.PermissionType.USAGE_STATS,
     onPermissionGranted: () -> Unit,
     viewModel: PermissionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val isPermissionGranted by viewModel.isPermissionGranted.collectAsStateWithLifecycle()
+
+    // Set permission type on composition
+    androidx.compose.runtime.LaunchedEffect(permissionType) {
+        viewModel.setPermissionType(permissionType)
+    }
 
     // Observe lifecycle to check permission when returning from settings
     DisposableEffect(lifecycleOwner) {
@@ -78,8 +84,17 @@ fun PermissionScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            val (title, description) = when (permissionType) {
+                com.zenapp.focus.PermissionType.USAGE_STATS -> {
+                    stringResource(R.string.permission_title) to stringResource(R.string.permission_description)
+                }
+                com.zenapp.focus.PermissionType.OVERLAY -> {
+                    "Permissão de Overlay" to "Para bloquear a tela durante o foco, o app precisa de permissão para exibir sobre outros apps."
+                }
+            }
+
             Text(
-                text = stringResource(R.string.permission_title),
+                text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
@@ -94,7 +109,7 @@ fun PermissionScreen(
                 )
             ) {
                 Text(
-                    text = stringResource(R.string.permission_description),
+                    text = description,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -105,7 +120,9 @@ fun PermissionScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.openSettings(context) },
+                onClick = {
+                    viewModel.openSettings(context)
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(

@@ -2,8 +2,10 @@ package com.zenapp.focus
 
 import android.app.AppOpsManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.zenapp.focus.presentation.focus.setup.FocusSetupScreen
 import com.zenapp.focus.presentation.home.HomeScreen
 import com.zenapp.focus.presentation.permission.PermissionScreen
 import com.zenapp.focus.presentation.theme.ZenAppTheme
@@ -43,15 +49,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ZenAppNavigation() {
-    var hasPermission by remember { mutableStateOf(false) }
+    var hasUsagePermission by remember { mutableStateOf(false) }
+    var hasOverlayPermission by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    // Check permission on lifecycle resume
+    // Check permissions on lifecycle resume
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                hasPermission = checkUsageStatsPermission(context)
+                hasUsagePermission = checkUsageStatsPermission(context)
+                hasOverlayPermission = checkOverlayPermission(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -61,15 +69,48 @@ fun ZenAppNavigation() {
         }
     }
 
-    if (hasPermission) {
-        HomeScreen()
-    } else {
-        PermissionScreen(
-            onPermissionGranted = {
-                hasPermission = true
-            }
+    when {
+        !hasUsagePermission -> PermissionScreen(
+            permissionType = PermissionType.USAGE_STATS,
+            onPermissionGranted = { hasUsagePermission = true }
         )
+        !hasOverlayPermission -> PermissionScreen(
+            permissionType = PermissionType.OVERLAY,
+            onPermissionGranted = { hasOverlayPermission = true }
+        )
+        else -> MainNavigationHost()
     }
+}
+
+@Composable
+fun MainNavigationHost() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") {
+            HomeScreen(
+                onNavigateToFocus = { navController.navigate("focus_setup") }
+            )
+        }
+
+        composable("focus_setup") {
+            FocusSetupScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onSessionStarted = {
+                    // Service will handle overlay, go back to home
+                    navController.popBackStack()
+                }
+            )
+        }
+    }
+}
+
+enum class PermissionType {
+    USAGE_STATS,
+    OVERLAY
 }
 
 private fun checkUsageStatsPermission(context: Context): Boolean {
@@ -80,4 +121,12 @@ private fun checkUsageStatsPermission(context: Context): Boolean {
         context.packageName
     )
     return mode == AppOpsManager.MODE_ALLOWED
+}
+
+private fun checkOverlayPermission(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        Settings.canDrawOverlays(context)
+    } else {
+        true
+    }
 }

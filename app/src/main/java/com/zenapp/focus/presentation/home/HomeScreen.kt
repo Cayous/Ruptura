@@ -40,6 +40,7 @@ import com.zenapp.focus.presentation.home.components.TopAppsList
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
+    onNavigateToFocus: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -109,6 +110,19 @@ fun HomeScreen(
                 // Peak hours chart
                 item {
                     PeakHoursChart(hourlyUsage = uiState.peakHours)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Focus button
+                item {
+                    androidx.compose.material3.Button(
+                        onClick = onNavigateToFocus,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text("🔒 Iniciar Sessão de Foco")
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }

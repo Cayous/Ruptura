@@ -41,6 +41,12 @@ class UsageRepositoryImpl @Inject constructor(
             mapper.aggregateAllAppsHourlyUsage(data.stats, data.events)
         }
 
+    override suspend fun getAppDetailData(packageName: String, timeRange: TimeRange): com.zenapp.focus.domain.model.AppDetailData? =
+        withContext(Dispatchers.IO) {
+            // TODO: Implement full AppDetailData when needed
+            null
+        }
+
     /**
      * Unified method to fetch usage data with caching.
      * Checks cache first, fetches from data source on miss.
