@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.zenapp.focus.presentation.focus.setup.FocusSetupScreen
 import com.zenapp.focus.presentation.home.HomeScreen
+import com.zenapp.focus.presentation.menu.MenuScreen
 import com.zenapp.focus.presentation.permission.PermissionScreen
 import com.zenapp.focus.presentation.theme.ZenAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -88,11 +89,18 @@ fun MainNavigationHost() {
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "menu"
     ) {
+        composable("menu") {
+            MenuScreen(
+                onNavigateToUsageDiagnostics = { navController.navigate("home") },
+                onNavigateToFocusSession = { navController.navigate("focus_setup") }
+            )
+        }
+
         composable("home") {
             HomeScreen(
-                onNavigateToFocus = { navController.navigate("focus_setup") }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

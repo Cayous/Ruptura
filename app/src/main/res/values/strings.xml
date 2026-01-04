@@ -14,4 +14,7 @@
     <string name="loading">Carregando...</string>
     <string name="error_loading_data">Erro ao carregar dados</string>
     <string name="refresh">Atualizar</string>
+    <string name="menu_title">ZenApp</string>
+    <string name="menu_button_diagnostics">📊 Diagnóstico de Uso</string>
+    <string name="menu_button_focus">🔒 Sessão de Foco</string>
 </resources>
