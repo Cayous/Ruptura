@@ -51,6 +51,7 @@ fun SpiritualLifeScreen(
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyListState = rememberLazyListState()
 
     LaunchedEffect(uiState.sessionStarted) {
         if (uiState.sessionStarted) {
@@ -79,8 +80,6 @@ fun SpiritualLifeScreen(
                 CircularProgressIndicator()
             }
         } else {
-            val lazyListState = rememberLazyListState()
-
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier

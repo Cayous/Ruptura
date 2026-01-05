@@ -57,10 +57,29 @@ class SpiritualLifeViewModel @Inject constructor(
         }
     }
 
+    private fun loadActivitiesInBackground() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true, error = null) }
+
+            getTodayActivitiesUseCase()
+                .onSuccess { activities ->
+                    _uiState.update { it.copy(activities = activities, isRefreshing = false) }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isRefreshing = false,
+                            error = "Erro ao carregar atividades: ${error.message}"
+                        )
+                    }
+                }
+        }
+    }
+
     fun markComplete(activityId: String) {
         viewModelScope.launch {
             markCompleteUseCase(activityId, CompletionType.MANUAL_CHECK)
-                .onSuccess { loadActivities() }
+                .onSuccess { loadActivitiesInBackground() }
                 .onFailure { error ->
                     _uiState.update { it.copy(error = "Erro ao marcar completo: ${error.message}") }
                 }
