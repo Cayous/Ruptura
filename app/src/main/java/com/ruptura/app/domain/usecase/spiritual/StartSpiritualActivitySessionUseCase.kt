@@ -11,7 +11,10 @@ class StartSpiritualActivitySessionUseCase @Inject constructor(
     private val spiritualRepository: SpiritualRepository,
     private val sessionRepository: FocusSessionRepository
 ) {
-    suspend operator fun invoke(activityId: String): Result<FocusSession> {
+    suspend operator fun invoke(
+        activityId: String,
+        customDurationSeconds: Int? = null
+    ): Result<FocusSession> {
         return try {
             val today = LocalDate.now().toString()
             if (spiritualRepository.isActivityCompleted(activityId, today)) {
@@ -25,8 +28,12 @@ class StartSpiritualActivitySessionUseCase @Inject constructor(
             // Removed active session check - let the service/repository handle conflicts
             // This prevents race conditions during session transitions
 
+            // Use custom duration if provided, otherwise use activity's default
+            val durationSeconds = customDurationSeconds ?: activity.durationSeconds
+            val durationMinutes = (durationSeconds + 59) / 60
+
             val config = SessionConfig(
-                focusDurationMinutes = activity.getDurationMinutes(),
+                focusDurationMinutes = durationMinutes,
                 breakDurationMinutes = 0,
                 totalCycles = 1,
                 monkModeEnabled = false,

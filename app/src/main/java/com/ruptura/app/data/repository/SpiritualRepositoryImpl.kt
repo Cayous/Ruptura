@@ -43,21 +43,19 @@ class SpiritualRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val predefinedActivities = listOf(
                 SpiritualActivityEntity("oferecimento_obras", "Oferecimento de obras", 30, 1),
-                SpiritualActivityEntity("oracao_manha_15", "Oração da manhã (15 min)", 900, 2),
-                SpiritualActivityEntity("oracao_manha_30", "Oração da manhã (30 min)", 1800, 3),
-                SpiritualActivityEntity("santa_missa", "Santa missa", 1800, 4),
-                SpiritualActivityEntity("visita_santissimo", "Visita ao santíssimo", 300, 5),
-                SpiritualActivityEntity("leitura_novo_testamento", "Leitura do novo testamento", 300, 6),
-                SpiritualActivityEntity("leitura_espiritual", "Leitura espiritual", 600, 7),
-                SpiritualActivityEntity("preces", "Preces", 180, 8),
-                SpiritualActivityEntity("angelus_regina_coeli", "Angelus e Regina Coeli", 60, 9),
-                SpiritualActivityEntity("santo_rosario", "Santo rosário", 1200, 10),
-                SpiritualActivityEntity("contemplar_rosario", "Contemplar santo rosário", 900, 11),
-                SpiritualActivityEntity("oracao_tarde_15", "Oração da tarde (15 min)", 900, 12),
-                SpiritualActivityEntity("oracao_tarde_30", "Oração da tarde (30 min)", 1800, 13),
-                SpiritualActivityEntity("lembrai_vos", "Lembrai-vos", 30, 14),
-                SpiritualActivityEntity("tres_ave_marias", "Três ave-marias para pureza", 30, 15),
-                SpiritualActivityEntity("exame_consciencia", "Exame de consciência", 180, 16)
+                SpiritualActivityEntity("oracao_manha", "Oração da manhã", 900, 2, true, "900,1800"),
+                SpiritualActivityEntity("santa_missa", "Santa missa", 1800, 3),
+                SpiritualActivityEntity("visita_santissimo", "Visita ao santíssimo", 300, 4),
+                SpiritualActivityEntity("leitura_novo_testamento", "Leitura do novo testamento", 300, 5),
+                SpiritualActivityEntity("leitura_espiritual", "Leitura espiritual", 600, 6),
+                SpiritualActivityEntity("preces", "Preces", 180, 7),
+                SpiritualActivityEntity("angelus_regina_coeli", "Angelus e Regina Coeli", 60, 8),
+                SpiritualActivityEntity("santo_rosario", "Santo rosário", 1200, 9),
+                SpiritualActivityEntity("contemplar_rosario", "Contemplar santo rosário", 900, 10),
+                SpiritualActivityEntity("oracao_tarde", "Oração da tarde", 900, 11, true, "900,1800"),
+                SpiritualActivityEntity("lembrai_vos", "Lembrai-vos", 30, 12),
+                SpiritualActivityEntity("tres_ave_marias", "Três ave-marias para pureza", 30, 13),
+                SpiritualActivityEntity("exame_consciencia", "Exame de consciência", 180, 14)
             )
 
             activityDao.insertActivities(predefinedActivities)

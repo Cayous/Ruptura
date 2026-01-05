@@ -4,7 +4,9 @@ data class SpiritualActivity(
     val id: String,
     val name: String,
     val durationSeconds: Int,
-    val orderIndex: Int
+    val orderIndex: Int,
+    val allowsTimeSelection: Boolean = false,
+    val availableDurations: List<Int> = emptyList()
 ) {
     fun getFormattedDuration(): String {
         return when {
@@ -21,4 +23,6 @@ data class SpiritualActivity(
     }
 
     fun getDurationMinutes(): Int = (durationSeconds + 59) / 60
+
+    fun supportsTimeSelection(): Boolean = allowsTimeSelection && availableDurations.isNotEmpty()
 }

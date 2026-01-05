@@ -16,7 +16,13 @@ class SpiritualMapper @Inject constructor() {
             id = entity.id,
             name = entity.name,
             durationSeconds = entity.durationSeconds,
-            orderIndex = entity.orderIndex
+            orderIndex = entity.orderIndex,
+            allowsTimeSelection = entity.allowsTimeSelection,
+            availableDurations = if (entity.availableDurations.isNotEmpty()) {
+                entity.availableDurations.split(",").map { it.toInt() }
+            } else {
+                emptyList()
+            }
         )
     }
 
@@ -25,7 +31,9 @@ class SpiritualMapper @Inject constructor() {
             id = domain.id,
             name = domain.name,
             durationSeconds = domain.durationSeconds,
-            orderIndex = domain.orderIndex
+            orderIndex = domain.orderIndex,
+            allowsTimeSelection = domain.allowsTimeSelection,
+            availableDurations = domain.availableDurations.joinToString(",")
         )
     }
 

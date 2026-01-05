@@ -9,5 +9,7 @@ data class SpiritualActivityEntity(
     val id: String,
     val name: String,
     val durationSeconds: Int,
-    val orderIndex: Int
+    val orderIndex: Int,
+    val allowsTimeSelection: Boolean = false,
+    val availableDurations: String = ""
 )

@@ -86,11 +86,11 @@ class SpiritualLifeViewModel @Inject constructor(
         }
     }
 
-    fun startActivitySession(activityId: String) {
+    fun startActivitySession(activityId: String, customDurationSeconds: Int? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(startingActivityId = activityId, error = null) }
 
-            startSessionUseCase(activityId)
+            startSessionUseCase(activityId, customDurationSeconds)
                 .onSuccess { session ->
                     val config = session.config
                     val intent = Intent(context, FocusLockService::class.java).apply {
@@ -128,6 +128,48 @@ class SpiritualLifeViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    fun showTimeSelection(activityId: String) {
+        val activity = _uiState.value.activities
+            .find { it.activity.id == activityId }
+            ?.activity
+
+        if (activity?.supportsTimeSelection() == true) {
+            _uiState.update {
+                it.copy(
+                    showingTimeSelectionForActivity = activityId,
+                    selectedDurationSeconds = activity.durationSeconds
+                )
+            }
+        } else {
+            startActivitySession(activityId, null)
+        }
+    }
+
+    fun setSelectedDuration(durationSeconds: Int) {
+        _uiState.update {
+            it.copy(selectedDurationSeconds = durationSeconds)
+        }
+    }
+
+    fun cancelTimeSelection() {
+        _uiState.update {
+            it.copy(
+                showingTimeSelectionForActivity = null,
+                selectedDurationSeconds = null
+            )
+        }
+    }
+
+    fun confirmAndStartSession() {
+        val activityId = _uiState.value.showingTimeSelectionForActivity
+        val durationSeconds = _uiState.value.selectedDurationSeconds
+
+        if (activityId != null && durationSeconds != null) {
+            startActivitySession(activityId, durationSeconds)
+            cancelTimeSelection()
         }
     }
 

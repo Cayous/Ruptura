@@ -17,12 +17,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -92,7 +94,7 @@ fun SpiritualLifeScreen(
                 items(uiState.activities, key = { it.activity.id }) { activityWithStatus ->
                     SpiritualActivityCard(
                         activityWithStatus = activityWithStatus,
-                        onStartSession = { viewModel.startActivitySession(it) },
+                        onStartSession = { viewModel.showTimeSelection(it) },
                         onMarkComplete = { viewModel.markComplete(it) },
                         isStarting = uiState.startingActivityId == activityWithStatus.activity.id
                     )
@@ -116,6 +118,23 @@ fun SpiritualLifeScreen(
                 ) {
                     Text(error)
                 }
+            }
+        }
+
+        if (uiState.showingTimeSelectionForActivity != null) {
+            val activity = uiState.activities
+                .find { it.activity.id == uiState.showingTimeSelectionForActivity }
+                ?.activity
+
+            if (activity != null) {
+                TimeSelectionDialog(
+                    activityName = activity.name,
+                    availableDurations = activity.availableDurations,
+                    selectedDuration = uiState.selectedDurationSeconds ?: activity.durationSeconds,
+                    onDurationSelected = { viewModel.setSelectedDuration(it) },
+                    onConfirm = { viewModel.confirmAndStartSession() },
+                    onDismiss = { viewModel.cancelTimeSelection() }
+                )
             }
         }
     }
@@ -204,4 +223,57 @@ private fun SpiritualActivityCard(
             }
         }
     }
+}
+
+@Composable
+private fun TimeSelectionDialog(
+    activityName: String,
+    availableDurations: List<Int>,
+    selectedDuration: Int,
+    onDurationSelected: (Int) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = activityName)
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Selecione a duração",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    availableDurations.forEach { durationSeconds ->
+                        val durationMinutes = durationSeconds / 60
+                        FilterChip(
+                            selected = selectedDuration == durationSeconds,
+                            onClick = { onDurationSelected(durationSeconds) },
+                            label = { Text("$durationMinutes min") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text(stringResource(R.string.spiritual_activity_start))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

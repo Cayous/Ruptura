@@ -18,7 +18,7 @@ import com.ruptura.app.data.local.entity.SpiritualCompletionEntity
         SpiritualActivityEntity::class,
         SpiritualCompletionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class FocusDatabase : RoomDatabase() {
