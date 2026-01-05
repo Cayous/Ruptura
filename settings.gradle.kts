@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ZenApp"
+rootProject.name = "Ruptura"
 include(":app")

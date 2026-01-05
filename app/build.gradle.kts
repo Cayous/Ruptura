@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.zenapp.focus"
+    namespace = "com.ruptura.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.zenapp.focus"
+        applicationId = "com.ruptura.app"
         minSdk = 31
         targetSdk = 34
         versionCode = 1

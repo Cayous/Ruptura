@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZenApp</string>
+    <string name="app_name">Ruptura</string>
     <string name="permission_title">Permissão Necessária</string>
-    <string name="permission_description">ZenApp precisa de acesso às estatísticas de uso para monitorar seus aplicativos e ajudá-lo a controlar o foco.</string>
+    <string name="permission_description">Ruptura precisa de acesso às estatísticas de uso para monitorar seus aplicativos e ajudá-lo a controlar o foco.</string>
     <string name="grant_permission">Conceder Permissão</string>
     <string name="home_title">Diagnóstico de Uso</string>
     <string name="top_apps_section">Apps Mais Usados</string>
@@ -14,7 +14,8 @@
     <string name="loading">Carregando...</string>
     <string name="error_loading_data">Erro ao carregar dados</string>
     <string name="refresh">Atualizar</string>
-    <string name="menu_title">ZenApp</string>
+    <string name="menu_title">Ruptura</string>
+    <string name="app_tagline">Combate Interior</string>
     <string name="menu_button_diagnostics">📊 Diagnóstico de Uso</string>
     <string name="menu_button_focus">🔒 Sessão de Foco</string>
     <string name="menu_button_spiritual_life">📿 Vida Espiritual</string>
