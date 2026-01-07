@@ -356,7 +356,7 @@ class FocusLockService : LifecycleService(), SavedStateRegistryOwner {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Focus Session",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = "Shows active focus session status"
                 setSound(null, null)
@@ -379,7 +379,9 @@ class FocusLockService : LifecycleService(), SavedStateRegistryOwner {
             .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .build()
     }
 
@@ -393,7 +395,9 @@ class FocusLockService : LifecycleService(), SavedStateRegistryOwner {
             .setContentText("Restam $timeString")
             .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .build()
 
         notificationManager.notify(NOTIFICATION_ID, notification)
