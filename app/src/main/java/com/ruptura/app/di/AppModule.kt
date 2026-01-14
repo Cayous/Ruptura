@@ -55,4 +55,10 @@ abstract class RepositoryModule {
     abstract fun bindSpiritualRepository(
         impl: com.ruptura.app.data.repository.SpiritualRepositoryImpl
     ): com.ruptura.app.domain.repository.SpiritualRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSpiritualScheduleRepository(
+        impl: com.ruptura.app.data.repository.SpiritualScheduleRepositoryImpl
+    ): com.ruptura.app.domain.repository.SpiritualScheduleRepository
 }

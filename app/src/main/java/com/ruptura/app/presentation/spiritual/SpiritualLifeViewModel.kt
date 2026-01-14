@@ -27,6 +27,11 @@ class SpiritualLifeViewModel @Inject constructor(
     private val getTodayActivitiesUseCase: GetTodaySpiritualActivitiesUseCase,
     private val markCompleteUseCase: MarkSpiritualActivityCompleteUseCase,
     private val startSessionUseCase: StartSpiritualActivitySessionUseCase,
+    private val getAllSchedulesUseCase: com.ruptura.app.domain.usecase.schedule.GetAllSchedulesUseCase,
+    private val addScheduleUseCase: com.ruptura.app.domain.usecase.schedule.AddScheduleUseCase,
+    private val updateScheduleUseCase: com.ruptura.app.domain.usecase.schedule.UpdateScheduleUseCase,
+    private val deleteScheduleUseCase: com.ruptura.app.domain.usecase.schedule.DeleteScheduleUseCase,
+    private val toggleScheduleUseCase: com.ruptura.app.domain.usecase.schedule.ToggleScheduleUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -35,6 +40,7 @@ class SpiritualLifeViewModel @Inject constructor(
 
     init {
         loadActivities()
+        loadSchedules()
         scheduleNextMidnightReset()
     }
 
@@ -53,6 +59,20 @@ class SpiritualLifeViewModel @Inject constructor(
                             error = "Erro ao carregar atividades: ${error.message}"
                         )
                     }
+                }
+        }
+    }
+
+    private fun loadSchedules() {
+        viewModelScope.launch {
+            getAllSchedulesUseCase()
+                .collect { schedulesWithActivity ->
+                    // Group schedules by activityId
+                    val schedulesByActivity = schedulesWithActivity
+                        .groupBy { it.schedule.activityId }
+                        .mapValues { (_, schedules) -> schedules.map { it.schedule } }
+
+                    _uiState.update { it.copy(schedulesByActivity = schedulesByActivity) }
                 }
         }
     }
@@ -186,6 +206,75 @@ class SpiritualLifeViewModel @Inject constructor(
 
                 delay(delayMillis)
                 loadActivities()
+            }
+        }
+    }
+
+    // Schedule Management Functions
+    fun showAddScheduleDialog(activityId: String) {
+        _uiState.update {
+            it.copy(
+                showingScheduleDialogForActivity = activityId,
+                editingSchedule = null
+            )
+        }
+    }
+
+    fun showEditScheduleDialog(schedule: com.ruptura.app.domain.model.SpiritualSchedule) {
+        _uiState.update {
+            it.copy(
+                showingScheduleDialogForActivity = schedule.activityId,
+                editingSchedule = schedule
+            )
+        }
+    }
+
+    fun dismissScheduleDialog() {
+        _uiState.update {
+            it.copy(
+                showingScheduleDialogForActivity = null,
+                editingSchedule = null
+            )
+        }
+    }
+
+    fun saveSchedule(schedule: com.ruptura.app.domain.model.SpiritualSchedule) {
+        viewModelScope.launch {
+            try {
+                if (schedule.id == 0L) {
+                    addScheduleUseCase(schedule)
+                } else {
+                    updateScheduleUseCase(schedule)
+                }
+                dismissScheduleDialog()
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = "Erro ao salvar horário: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun deleteSchedule(schedule: com.ruptura.app.domain.model.SpiritualSchedule) {
+        viewModelScope.launch {
+            try {
+                deleteScheduleUseCase(schedule)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = "Erro ao deletar horário: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun toggleSchedule(scheduleId: Long, enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                toggleScheduleUseCase(scheduleId, enabled)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = "Erro ao alterar horário: ${e.message}")
+                }
             }
         }
     }

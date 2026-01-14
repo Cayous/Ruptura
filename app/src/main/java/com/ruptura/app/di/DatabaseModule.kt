@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.ruptura.app.data.local.FocusDatabase
 import com.ruptura.app.data.local.dao.SessionDao
 import com.ruptura.app.data.local.dao.SessionStatsDao
+import com.ruptura.app.data.local.migrations.MIGRATION_4_5
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,6 +27,7 @@ object DatabaseModule {
             FocusDatabase::class.java,
             "focus_database"
         )
+            .addMigrations(MIGRATION_4_5)
             .fallbackToDestructiveMigration()
             .build()
     }
@@ -48,5 +50,15 @@ object DatabaseModule {
     @Provides
     fun provideSpiritualCompletionDao(database: FocusDatabase): com.ruptura.app.data.local.dao.SpiritualCompletionDao {
         return database.spiritualCompletionDao()
+    }
+
+    @Provides
+    fun provideSpiritualScheduleDao(database: FocusDatabase): com.ruptura.app.data.local.dao.SpiritualScheduleDao {
+        return database.spiritualScheduleDao()
+    }
+
+    @Provides
+    fun provideScheduleSnoozeDao(database: FocusDatabase): com.ruptura.app.data.local.dao.ScheduleSnoozeDao {
+        return database.scheduleSnoozeDao()
     }
 }
