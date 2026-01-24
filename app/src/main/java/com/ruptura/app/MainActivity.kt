@@ -8,6 +8,10 @@ import android.os.Process
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.lifecycleScope
+import com.ruptura.app.domain.usecase.schedule.RescheduleAllUseCase
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,6 +38,10 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var rescheduleAllUseCase: RescheduleAllUseCase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -44,6 +52,18 @@ class MainActivity : ComponentActivity() {
                 ) {
                     ZenAppNavigation()
                 }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Reagendar alarmes ao entrar em foreground
+        lifecycleScope.launch {
+            try {
+                rescheduleAllUseCase()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
