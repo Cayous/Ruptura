@@ -11,26 +11,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ruptura.app.R
+import com.ruptura.app.domain.model.PeriodOfDay
 import com.ruptura.app.domain.model.SpiritualActivityWithStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,28 +95,66 @@ fun SpiritualLifeScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val sortedActivities = remember(uiState.activities, uiState.schedulesByActivity) {
+                uiState.activities.sortedWith(
+                    compareBy(
+                        { uiState.schedulesByActivity[it.activity.id]?.minOfOrNull { s -> s.minutesOfDay } ?: Int.MAX_VALUE },
+                        { it.activity.orderIndex }
+                    )
+                )
+            }
+
+            val grouped = remember(sortedActivities, uiState.schedulesByActivity) {
+                sortedActivities.groupBy { activityWithStatus ->
+                    val schedules = uiState.schedulesByActivity[activityWithStatus.activity.id]
+                    if (schedules.isNullOrEmpty()) null
+                    else schedules.minByOrNull { it.minutesOfDay }?.periodOfDay
+                }
+            }
+
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
+                contentPadding = PaddingValues(vertical = 12.dp)
             ) {
-                items(uiState.activities, key = { it.activity.id }) { activityWithStatus ->
-                    val schedules = uiState.schedulesByActivity[activityWithStatus.activity.id] ?: emptyList()
-                    SpiritualActivityCard(
-                        activityWithStatus = activityWithStatus,
-                        schedules = schedules,
-                        onStartSession = { viewModel.showTimeSelection(it) },
-                        onMarkComplete = { viewModel.markComplete(it) },
-                        onAddSchedule = { viewModel.showAddScheduleDialog(it) },
-                        onEditSchedule = { viewModel.showEditScheduleDialog(it) },
-                        onDeleteSchedule = { viewModel.deleteSchedule(it) },
-                        onToggleSchedule = { scheduleId, enabled -> viewModel.toggleSchedule(scheduleId, enabled) },
-                        isStarting = uiState.startingActivityId == activityWithStatus.activity.id
-                    )
+                val periods = listOf(PeriodOfDay.MORNING, PeriodOfDay.AFTERNOON, PeriodOfDay.NIGHT, null)
+
+                periods.forEach { period ->
+                    val activities = grouped[period]
+                    if (activities.isNullOrEmpty()) return@forEach
+
+                    item(key = "header_${period?.name ?: "none"}") {
+                        SectionHeader(period)
+                    }
+                    item(key = "card_${period?.name ?: "none"}") {
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            Column {
+                                activities.forEachIndexed { index, activityWithStatus ->
+                                    val schedules = uiState.schedulesByActivity[activityWithStatus.activity.id] ?: emptyList()
+                                    SpiritualActivityItem(
+                                        activityWithStatus = activityWithStatus,
+                                        schedules = schedules,
+                                        onStartSession = { viewModel.showTimeSelection(it) },
+                                        onMarkComplete = { viewModel.markComplete(it) },
+                                        onAddSchedule = { viewModel.showAddScheduleDialog(it) },
+                                        onEditSchedule = { viewModel.showEditScheduleDialog(it) },
+                                        onDeleteSchedule = { viewModel.deleteSchedule(it) },
+                                        onToggleSchedule = { scheduleId, enabled -> viewModel.toggleSchedule(scheduleId, enabled) },
+                                        isStarting = uiState.startingActivityId == activityWithStatus.activity.id
+                                    )
+                                    if (index < activities.lastIndex) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(horizontal = 12.dp),
+                                            color = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -167,9 +206,20 @@ fun SpiritualLifeScreen(
     }
 }
 
+@Composable
+private fun SectionHeader(period: PeriodOfDay?) {
+    Text(
+        text = if (period != null) "${period.getEmoji()} ${period.getDisplayName()}"
+               else "Sem horário",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp, start = 4.dp)
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpiritualActivityCard(
+private fun SpiritualActivityItem(
     activityWithStatus: SpiritualActivityWithStatus,
     schedules: List<com.ruptura.app.domain.model.SpiritualSchedule>,
     onStartSession: (String) -> Unit,
@@ -182,130 +232,116 @@ private fun SpiritualActivityCard(
 ) {
     val activity = activityWithStatus.activity
     val isCompleted = activityWithStatus.isCompleted
+    val sortedSchedules = schedules.sortedBy { it.minutesOfDay }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isCompleted)
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            else
-                MaterialTheme.colorScheme.surface
-        )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        IconButton(
+            onClick = { onMarkComplete(activity.id) },
+            enabled = !isCompleted,
+            modifier = Modifier.size(36.dp)
         ) {
-            // Main content row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Icon(
+                imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                contentDescription = if (isCompleted) "Completo" else stringResource(R.string.spiritual_activity_mark_complete),
+                tint = if (isCompleted)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = activity.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isCompleted) FontWeight.Normal else FontWeight.Medium,
+                textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
+                color = if (isCompleted)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                else
+                    MaterialTheme.colorScheme.onSurface
+            )
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Text(
+                    text = activity.getFormattedDuration(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                if (sortedSchedules.isNotEmpty()) {
                     Text(
-                        text = activity.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (isCompleted) FontWeight.Normal else FontWeight.Medium,
-                        textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
-                        color = if (isCompleted)
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        else
-                            MaterialTheme.colorScheme.onSurface
+                        text = "·",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     )
-                    Text(
-                        text = activity.getFormattedDuration(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { onStartSession(activity.id) },
-                        enabled = !isCompleted && !isStarting,
-                        modifier = Modifier.width(100.dp)
-                    ) {
-                        if (isStarting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(stringResource(R.string.spiritual_activity_start))
-                        }
+                    sortedSchedules.forEach { schedule ->
+                        ScheduleChip(
+                            schedule = schedule,
+                            onEdit = { onEditSchedule(schedule) },
+                            onDelete = { onDeleteSchedule(schedule) },
+                            onToggle = { enabled -> onToggleSchedule(schedule.id, enabled) }
+                        )
                     }
-
                     IconButton(
-                        onClick = { onMarkComplete(activity.id) },
-                        enabled = !isCompleted
+                        onClick = { onAddSchedule(activity.id) },
+                        modifier = Modifier.size(28.dp).align(Alignment.CenterVertically)
                     ) {
                         Icon(
-                            imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = if (isCompleted) "Completo" else stringResource(R.string.spiritual_activity_mark_complete),
-                            tint = if (isCompleted)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Adicionar horário",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    TextButton(
+                        onClick = { onAddSchedule(activity.id) },
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = "+ horário",
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
             }
+        }
 
-            // Schedules section
-            if (schedules.isNotEmpty() || true) { // Always show to allow adding schedules
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Horários",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        TextButton(
-                            onClick = { onAddSchedule(activity.id) }
-                        ) {
-                            Text("+ Adicionar")
-                        }
-                    }
-
-                    if (schedules.isEmpty()) {
-                        Text(
-                            text = "Nenhum horário configurado",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    } else {
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            schedules.sortedBy { it.minutesOfDay }.forEach { schedule ->
-                                ScheduleChip(
-                                    schedule = schedule,
-                                    onEdit = { onEditSchedule(schedule) },
-                                    onDelete = { onDeleteSchedule(schedule) },
-                                    onToggle = { enabled -> onToggleSchedule(schedule.id, enabled) }
-                                )
-                            }
-                        }
-                    }
-                }
+        if (isStarting) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp
+            )
+        } else {
+            IconButton(
+                onClick = { onStartSession(activity.id) },
+                enabled = !isCompleted,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = stringResource(R.string.spiritual_activity_start),
+                    tint = if (isCompleted)
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    else
+                        MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
     }
