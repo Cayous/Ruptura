@@ -1,5 +1,7 @@
 package com.ruptura.app.presentation.spiritual
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,8 +51,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -130,7 +134,10 @@ fun SpiritualLifeScreen(
                         SectionHeader(period)
                     }
                     item(key = "card_${period?.name ?: "none"}") {
-                        Card(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                        ) {
                             Column {
                                 activities.forEachIndexed { index, activityWithStatus ->
                                     val schedules = uiState.schedulesByActivity[activityWithStatus.activity.id] ?: emptyList()
@@ -211,9 +218,13 @@ private fun SectionHeader(period: PeriodOfDay?) {
     Text(
         text = if (period != null) "${period.getEmoji()} ${period.getDisplayName()}"
                else "Sem horário",
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp, start = 4.dp)
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onBackground,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 6.dp)
     )
 }
 
@@ -237,6 +248,10 @@ private fun SpiritualActivityItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                if (isCompleted) Color.Transparent
+                else MaterialTheme.colorScheme.background
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
